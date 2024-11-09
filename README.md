@@ -6,6 +6,8 @@
 - 설정된 암호로 해당 주소에 해당하는 JSON 지갑 파일을 다운로드 합니다. 
 - 지갑파일은 메타마스크,마이이더월렛 형식으로 저장됩니다.
 - https://wallet.gonspool.com/#view-wallet-info 에서도 사용가능합니다.
+  
+![image](https://github.com/user-attachments/assets/7d826b9c-7988-41b4-955e-fb72607a3b7d)
 
 ## API 엔드포인트
 
