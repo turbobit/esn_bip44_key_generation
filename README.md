@@ -30,7 +30,7 @@
 ## 시작하기
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ## 기여
