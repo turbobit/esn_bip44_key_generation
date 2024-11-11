@@ -4,12 +4,22 @@ import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { Wallet } from 'ethers';
 
+const DERIVATION_PATHS = [
+  { name: 'Ethersocial Network (ESN)', path: "44'/31102'/0'/0" },
+  { name: 'Bitcoin (BTC)', path: "44'/0'/0'/0" },
+  { name: 'Ethereum (ETH)', path: "44'/60'/0'/0" },
+  { name: 'Litecoin (LTC)', path: "44'/2'/0'/0" },
+  { name: 'Dogecoin (DOGE)', path: "44'/3'/0'/0" },
+  { name: 'Ethereum Classic (ETC)', path: "44'/61'/0'/0" },
+];
+
 export default function Home() {
   const [mnemonic, setMnemonic] = useState<string>('');
   const [addresses, setAddresses] = useState<{ index: number; address: string }[]>([]);
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [addressCount, setAddressCount] = useState<number>(0);
+  const [basePath, setBasePath] = useState<string>("44'/31102'/0'/0");
 
   /**
    * 설정된 니모닉으로 ESN 주소 생성
@@ -25,7 +35,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ mnemonic, count: newCount }),
+        body: JSON.stringify({ mnemonic, count: newCount, basePath }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -101,16 +111,16 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ mnemonic, index }),
+        body: JSON.stringify({ mnemonic, index, basePath }),
       });
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message);
       }
 
       const wallet = new Wallet(data.privateKey);
-      
+
       const encryptedWallet = await wallet.encrypt(password);
       const keystoreJson = JSON.parse(encryptedWallet);
 
@@ -132,7 +142,7 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-8 py-8 max-w-5xl">
-      <Toaster 
+      <Toaster
         position="top-center"
         toastOptions={{
           duration: 3000,
@@ -148,88 +158,117 @@ export default function Home() {
       </p>
       <div className="space-y-4">
         <div className="flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="24단어 니모닉을 입력하세요" 
-            value={mnemonic}
-            onChange={(e) => setMnemonic(e.target.value)}
-            className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[500px]"
-          />
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="키스토어 비밀번호를 입력하세요"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-            >
-              {showPassword ? (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              )}
-            </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Base Path:</label>
+            <div className="flex gap-2">
+              <select
+                value={basePath}
+                onChange={(e) => setBasePath(e.target.value)}
+                className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {DERIVATION_PATHS.map((item) => (
+                  <option key={item.path} value={item.path}>
+                    {item.name} (m/{item.path})
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="직접 입력"
+                value={basePath}
+                onChange={(e) => setBasePath(e.target.value)}
+                className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
-          <div className="flex gap-4">
-            <button 
-              onClick={handleGenerateRandomMnemonic}
-              className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              랜덤 니모닉 생성
-            </button>
-            <button 
-              onClick={handleGenerateAddresses}
-              className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors"
-            >
-              입력된 니모닉으로 주소 생성
-            </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">니모닉</label>
+            <input
+              type="text"
+              placeholder="24단어 니모닉을 입력하세요"
+              value={mnemonic}
+              onChange={(e) => setMnemonic(e.target.value)}
+              className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[500px]"
+            />
+          </div>
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="키스토어 비밀번호를 입력하세요"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-        <ul className="space-y-2">
-          {addresses.map((addr) => (
-            <li 
-              key={addr.index}
-              className="p-3 bg-gray-50 rounded-lg flex justify-between items-center"
-            >
-              <span>{`Address ${addr.index}: ${addr.address}`}</span>
-              <div className="flex gap-2">
-                <a
-                  href={`https://swap.ethersocial.org/api/py/snapshot_python/account?address=${addr.address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                >
-                  주소 확인
-                </a>
-                <button
-                  onClick={() => handleDownloadKeystore(addr.index)}
-                  className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
-                >
-                  키스토어 다운로드
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-        {addresses.length > 0 && (
-          <button 
-            onClick={handleLoadMoreAddresses}
-            className="mt-4 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+        <div className="flex gap-4">
+          <button
+            onClick={handleGenerateRandomMnemonic}
+            className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
           >
-            더 보기
+            랜덤 니모닉 생성
           </button>
-        )}
+          <button
+            onClick={handleGenerateAddresses}
+            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors"
+          >
+            입력된 니모닉으로 주소 생성
+          </button>
+        </div>
       </div>
+      <ul className="space-y-2">
+        {addresses.map((addr) => (
+          <li
+            key={addr.index}
+            className="p-3 bg-gray-50 rounded-lg flex justify-between items-center"
+          >
+            <span>{`Address ${addr.index}: ${addr.address}`}</span>
+            <div className="flex gap-2">
+              <a
+                href={`https://swap.ethersocial.org/api/py/snapshot_python/account?address=${addr.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                주소 확인
+              </a>
+              <button
+                onClick={() => handleDownloadKeystore(addr.index)}
+                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors"
+              >
+                키스토어 다운로드
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {addresses.length > 0 && (
+        <button
+          onClick={handleLoadMoreAddresses}
+          className="mt-4 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+        >
+          더 보기
+        </button>
+      )}
     </div>
   );
 } 
