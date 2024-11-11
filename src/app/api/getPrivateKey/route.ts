@@ -10,12 +10,12 @@ import { NextResponse } from 'next/server';
  */
 export async function POST(request: Request) {
   try {
-    const { mnemonic, index } = await request.json();
+    const { mnemonic, index, basePath } = await request.json();
     
-    const hdNode = ethers.HDNodeWallet.fromPhrase(mnemonic);
-    const path = `44'/31102'/0'/0/${index}`;
-    const wallet = hdNode.derivePath(path);
-    
+    const path = `${basePath}/${index}`;
+    const mnemonicObj = ethers.Mnemonic.fromPhrase(mnemonic);
+    const wallet = ethers.HDNodeWallet.fromMnemonic(mnemonicObj, path);
+
     return NextResponse.json({ privateKey: wallet.privateKey });
   } catch (error) {
     console.log(error);
