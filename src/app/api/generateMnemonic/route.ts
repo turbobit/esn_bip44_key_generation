@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import { Mnemonic } from 'ethers';
 
 /**
- * 니모닉 랜덤 생성
+ * 니모닉 랜덤 생성 API 엔드포인트
  * 
- * @description 새로운 니모닉을 생성합니다.
- * @returns 생성된 니모닉 문자열
+ * @description 지정된 단어 수에 따라 새로운 니모닉 문구를 생성합니다.
+ * @param {Request} request - HTTP 요청 객체
+ * @param {URLSearchParams} request.searchParams - URL 검색 매개변수
+ * @param {string} [request.searchParams.wordCount=24] - 생성할 니모닉 단어 수 (12, 15, 18, 21, 24)
+ * @returns {Promise<NextResponse>} 생성된 니모닉 문구와 단어 수를 포함한 JSON 응답
+ * @throws {Error} 유효하지 않은 단어 수이거나 생성 중 오류 발생 시
  */
 export async function GET(request: Request) {
   try {
