@@ -10,14 +10,14 @@ import { NextResponse } from 'next/server';
  */
 export async function POST(request: Request) {
   try {
-    const { mnemonic, count } = await request.json();
+    const { mnemonic, count, basePath } = await request.json();
     
-    const hdNode = ethers.HDNodeWallet.fromPhrase(mnemonic);
     const addresses = [];
 
     for (let i = 0; i < count; i++) {
-      const path = `44'/31102'/0'/0/${i}`;
-      const wallet = hdNode.derivePath(path);
+      const path = `${basePath}/${i}`;
+      const mnemonicObj = ethers.Mnemonic.fromPhrase(mnemonic);
+      const wallet = ethers.HDNodeWallet.fromMnemonic(mnemonicObj, path);
       addresses.push({ index: i, address: wallet.address });
     }
     
