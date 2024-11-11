@@ -7,7 +7,7 @@
 - 지갑파일은 메타마스크,마이이더월렛 형식으로 저장됩니다.
 - https://wallet.gonspool.com/#view-wallet-info 에서도 사용가능합니다.
   
-![image](https://github.com/user-attachments/assets/7d826b9c-7988-41b4-955e-fb72607a3b7d)
+![image](https://github.com/user-attachments/assets/6293208a-e513-4e26-801f-335d8386ccba)
 
 ## API 엔드포인트
 
