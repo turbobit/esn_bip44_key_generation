@@ -12,6 +12,7 @@ const DERIVATION_PATHS = [
   { name: 'Dogecoin (DOGE)', path: "44'/3'/0'/0" },
   { name: 'Ethereum Classic (ETC)', path: "44'/61'/0'/0" },
 ];
+const WORD_COUNT_OPTIONS = [12, 15, 18, 21, 24] as const;
 
 export default function Home() {
   const [mnemonic, setMnemonic] = useState<string>('');
@@ -20,6 +21,7 @@ export default function Home() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [addressCount, setAddressCount] = useState<number>(0);
   const [basePath, setBasePath] = useState<string>("44'/31102'/0'/0");
+  const [wordCount, setWordCount] = useState<number>(24);
 
   /**
    * 설정된 니모닉으로 ESN 주소 생성
@@ -61,9 +63,7 @@ export default function Home() {
   const handleGenerateRandomMnemonic = async () => {
     setAddressCount(0);
     try {
-      const response = await fetch('/api/generateMnemonic', {
-        method: 'GET',
-      });
+      const response = await fetch(`/api/generateMnemonic?wordCount=${wordCount}`);
       const data = await response.json();
       if (response.ok) {
         setMnemonic(data.mnemonic);
@@ -183,13 +183,26 @@ export default function Home() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">니모닉</label>
-            <input
-              type="text"
-              placeholder="24단어 니모닉을 입력하세요"
-              value={mnemonic}
-              onChange={(e) => setMnemonic(e.target.value)}
-              className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[500px]"
-            />
+            <div className="flex gap-2">
+              <select
+                value={wordCount}
+                onChange={(e) => setWordCount(Number(e.target.value))}
+                className="rounded border p-2"
+              >
+                {WORD_COUNT_OPTIONS.map((count) => (
+                  <option key={count} value={count}>
+                    {count}단어
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="24단어 니모닉을 입력하세요"
+                value={mnemonic}
+                onChange={(e) => setMnemonic(e.target.value)}
+                className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[500px]"
+              />
+            </div>
           </div>
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>

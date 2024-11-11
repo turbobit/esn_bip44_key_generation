@@ -7,10 +7,25 @@ import { Mnemonic } from 'ethers';
  * @description 새로운 니모닉을 생성합니다.
  * @returns 생성된 니모닉 문자열
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const mnemonic = Mnemonic.fromEntropy(crypto.getRandomValues(new Uint8Array(32))).phrase;
-    return NextResponse.json({ mnemonic });
+    // URL에서 wordCount 파라미터를 가져옴 (기본값 24)
+    const { searchParams } = new URL(request.url);
+    const wordCount = parseInt(searchParams.get('wordCount') || '24');
+    
+    // 유효한 단어 수인지 확인
+    if (![12, 15, 18, 21, 24].includes(wordCount)) {
+      return NextResponse.json(
+        { message: '유효하지 않은 단어 수입니다. 12, 15, 18, 21, 24 중 하나를 선택하세요.' },
+        { status: 400 }
+      );
+    }
+
+    // wordCount에 따른 엔트로피 크기 계산 (기본값은 32 bytes로 24단어 생성)
+    const entropyBytes = Math.floor(wordCount * 4 / 3);
+    
+    const mnemonic = Mnemonic.fromEntropy(crypto.getRandomValues(new Uint8Array(entropyBytes))).phrase;
+    return NextResponse.json({ mnemonic, wordCount });
   } catch (error: unknown) {
     console.error('Error generating mnemonic:', error);
     return NextResponse.json(
