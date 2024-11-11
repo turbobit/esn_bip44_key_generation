@@ -43,7 +43,7 @@ export default function Home() {
       if (response.ok) {
         setAddresses(data.addresses);
       } else {
-        toast.error('유효하지 않은 니모닉입니다. 24단어인지 확인해주세요.');
+        toast.error(`유효하지 않은 니모닉입니다. ${wordCount}단어인지 확인해주세요.`);
       }
     } catch (err) {
       toast.error('주소 생성 중 오류가 발생했습니다.2');
@@ -163,7 +163,11 @@ export default function Home() {
             <div className="flex gap-2">
               <select
                 value={basePath}
-                onChange={(e) => setBasePath(e.target.value)}
+                onChange={(e) => {
+                  setBasePath(e.target.value);
+                  setAddresses([]);
+                  setAddressCount(0);
+                }}
                 className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 {DERIVATION_PATHS.map((item) => (
@@ -186,7 +190,10 @@ export default function Home() {
             <div className="flex gap-2">
               <select
                 value={wordCount}
-                onChange={(e) => setWordCount(Number(e.target.value))}
+                onChange={(e) => {
+                  setWordCount(Number(e.target.value));
+                  setMnemonic('');
+                }}
                 className="rounded border p-2"
               >
                 {WORD_COUNT_OPTIONS.map((count) => (
@@ -197,7 +204,7 @@ export default function Home() {
               </select>
               <input
                 type="text"
-                placeholder="24단어 니모닉을 입력하세요"
+                placeholder={`${wordCount}단어 니모닉을 입력하세요`}
                 value={mnemonic}
                 onChange={(e) => setMnemonic(e.target.value)}
                 className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[500px]"
